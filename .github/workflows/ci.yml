@@ -1,0 +1,54 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches: [ "main", "dev" ]
+  push:
+    branches: [ "dev" ]
+
+jobs: 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: lint code
+        run: ruff check .
+
+      - name: run tests
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        run: pytest
+
+      - name: build docker image
+        run: docker build . --file Dockerfile --tag taskmanager:test
+        
+  push-to-dockerhub:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: login to dockerhub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager:latest
+    
