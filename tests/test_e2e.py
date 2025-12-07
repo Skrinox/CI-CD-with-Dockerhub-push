@@ -1,3 +1,4 @@
+import os
 import threading
 import time
 
@@ -21,6 +22,11 @@ def wait_for_server(url, timeout=10):
 
 @pytest.fixture
 def start_app():
+    
+    db_path = os.path.abspath("e2e_test.db")
+    os.environ["DATABASE_URL"] = f"sqlite:///{db_path}"
+    os.environ["SECRET_KEY"] = "e2e-test-secret"
+    
     app = create_app()
     
     with app.app_context():
