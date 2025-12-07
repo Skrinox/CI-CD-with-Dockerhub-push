@@ -1,19 +1,19 @@
 import os
-from datetime import datetime, date
+from datetime import date, datetime
 from functools import wraps
 
+from dotenv import load_dotenv
+from extensions import db
 from flask import (
     Flask,
-    render_template,
-    redirect,
-    url_for,
-    request,
-    session,
     flash,
     g,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
 )
-from dotenv import load_dotenv
-from extensions import db 
 
 load_dotenv()
 
@@ -42,7 +42,7 @@ def create_app():
     db.init_app(app)
 
     with app.app_context():
-        from models import User, Task  # noqa: F401
+        from models import Task, User  # noqa: F401
         db.create_all()
 
     register_routes(app)
@@ -61,7 +61,7 @@ def login_required(view):
 
 
 def register_routes(app):
-    from models import User, Task
+    from models import Task, User
 
     @app.before_request
     def load_logged_in_user():
